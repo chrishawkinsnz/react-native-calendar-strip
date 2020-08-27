@@ -267,83 +267,36 @@ class CalendarDay extends Component {
     }
   }
 
-  renderMarking() {
+  renderDots() {
     if (!this.props.markedDates || this.props.markedDates.length === 0) {
       return;
     }
     const marking = this.state.marking;
-
-    if (marking.dots && Array.isArray(marking.dots) && marking.dots.length > 0) {
-      return this.renderDots(marking);
-    }
-    if (marking.lines && Array.isArray(marking.lines) && marking.lines.length > 0) {
-      return this.renderLines(marking);
-    }
-
-    return ( // default empty spacer
-      <View style={styles.dotsContainer}>
-        <View style={[styles.dot]} />
-      </View>
-    );
-  }
-
-  renderDots(marking) {
     const baseDotStyle = [styles.dot, styles.visibleDot];
     const markedDatesStyle = this.props.markedDatesStyle || {};
-    const formattedDate = this.props.date.format('YYYY-MM-DD');
     let validDots = <View style={[styles.dot]} />; // default empty view for no dots case
 
-    // Filter dots and process only those which have color property
-    validDots = marking.dots
-      .filter(d => (d && d.color))
-      .map((dot, index) => {
-        const selectedColor = dot.selectedColor || dot.selectedDotColor; // selectedDotColor deprecated
-        const backgroundColor = this.state.selected && selectedColor ? selectedColor : dot.color;
+    if (marking.dots && Array.isArray(marking.dots) && marking.dots.length > 0) {
+      // Filter out dots so that we we process only those items which have key and color property
+      validDots = marking.dots
+        .filter(d => (d && d.color))
+        .map((dot, index) => {
         return (
           <View
-            key={dot.key || (formattedDate + index)}
+            key={dot.key ? dot.key : index}
             style={[
               baseDotStyle,
-              { backgroundColor },
+              { backgroundColor: this.state.selected && dot.selectedDotColor ? dot.selectedDotColor : dot.color },
               markedDatesStyle
             ]}
           />
         );
       });
+    }
 
     return (
       <View style={styles.dotsContainer}>
         {validDots}
-      </View>
-    );
-  }
-
-  renderLines(marking) {
-    const baseLineStyle = [styles.line, styles.visibleLine];
-    const markedDatesStyle = this.props.markedDatesStyle || {};
-    let validLines = <View style={[styles.line]} />; // default empty view
-
-    // Filter lines and process only those which have color property
-    validLines = marking.lines
-      .filter(d => (d && d.color))
-      .map((line, index) => {
-        const backgroundColor = this.state.selected && line.selectedColor ? line.selectedColor : line.color;
-        const width = this.props.size * 0.6;
-        return (
-          <View
-            key={line.key ? line.key : index}
-            style={[
-              baseLineStyle,
-              { backgroundColor, width },
-              markedDatesStyle
-            ]}
-          />
-        );
-      });
-
-    return (
-      <View style={styles.linesContainer}>
-        {validLines}
       </View>
     );
   }
@@ -463,21 +416,21 @@ class CalendarDay extends Component {
                 style={[{ fontSize: dateNameFontSize }, _dateNameStyle]}
                 allowFontScaling={allowDayTextScaling}
               >
-                {date.format("ddd").toUpperCase()}
+                {date.format("ddd")}
               </Text>
             )}
             {showDayNumber && (
               <View>
                 <Text
                   style={[
-                    { fontSize: dateNumberFontSize },
-                    _dateNumberStyle
+                      { fontSize: dateNumberFontSize },
+                      _dateNumberStyle
                   ]}
                   allowFontScaling={allowDayTextScaling}
                 >
                   {date.date()}
                 </Text>
-                { this.renderMarking() }
+                { this.renderDots() }
               </View>
             )}
           </View>
